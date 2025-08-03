@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Paste</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>View Paste</h1>
+    <textarea readonly rows="10" cols="50"><%= text %></textarea>
+    <br>
+    <button onclick="copyToClipboard()">Copy URL</button>
+  </div>
+
+  <script>
+    function copyToClipboard() {
+      const url = window.location.href;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('URL copied to clipboard!');
+      }, () => {
+        alert('Failed to copy URL.');
+      });
+    }
+  </script>
+</body>
+</html>
