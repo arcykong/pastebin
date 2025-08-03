@@ -40,3 +40,14 @@ button {
 button:hover {
   background-color: #45a049;
 }
+
+.qr-code {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.qr-code img, .qr-code canvas {
+  border: 1px solid #ccc;
+  padding: 5px;
+  background-color: #fff;
+}

@@ -12,9 +12,30 @@
     <textarea readonly rows="10" cols="50"><%= text %></textarea>
     <br>
     <button onclick="copyToClipboard()">Copy URL</button>
+
+    <div id="qr-code-container" class="qr-code">
+      <h3>Scan QR Code</h3>
+      <div id="qr-code"></div>
+    </div>
+
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
   <script>
+    // Generate QR Code
+    try {
+      const typeNumber = 4;
+      const errorCorrectionLevel = 'L';
+      const qr = qrcode(typeNumber, errorCorrectionLevel);
+      qr.addData(window.location.href);
+      qr.make();
+      document.getElementById('qr-code').innerHTML = qr.createImgTag(4);
+    } catch (e) {
+      console.error("QR Code generation failed:", e);
+      document.getElementById('qr-code-container').style.display = 'none';
+    }
+
+    // Copy URL to clipboard
     function copyToClipboard() {
       const url = window.location.href;
       navigator.clipboard.writeText(url).then(() => {
