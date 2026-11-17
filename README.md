@@ -1,20 +1,21 @@
 # Pastebin Application
 
-This is a simple web application that allows users to create and share text snippets (pastes). When a user submits text, the application generates a unique random URL where the content can be viewed. The data is stored in memory and expires after 24 hours.
+This is a simple web application for creating and sharing text snippets (pastes) through randomly generated URLs. Pastes are stored in memory and expire after 24 hours. Restarting or recreating the container removes all stored pastes.
 
 ## Features
 
 - Create text pastes.
-- Generate a unique, random URL for each paste.
-- View pastes at their unique URL.
-- "Copy URL" button to easily share the link.
+- Generate an 8-character URL using lowercase letters and digits, excluding `0`, `1`, `o`, and `l` to reduce confusion.
+- Click HTTP and HTTPS links to open them in a new tab while preserving the displayed text, spaces, and line breaks for selection and copying.
+- Use "Copy URL", "Copy Text", and "New Paste" buttons to share, copy the original text, or start a new paste.
+- Automatically follow the operating system's light or dark mode; QR codes retain a white background.
 - Pastes automatically expire after 24 hours.
 - In-memory storage, no database required.
 - Dockerized for easy deployment.
 
 ## Technology Stack
 
-- **Backend:** Node.js, Express.js
+- **Backend:** Node.js 24, Express.js
 - **Template Engine:** EJS (Embedded JavaScript)
 - **Containerization:** Docker
 
@@ -23,6 +24,7 @@ This is a simple web application that allows users to create and share text snip
 ```
 /
 ├── Dockerfile
+├── .dockerignore
 ├── index.js
 ├── package.json
 ├── package-lock.json
@@ -39,8 +41,8 @@ This is a simple web application that allows users to create and share text snip
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) and npm
-- [Docker](https://www.docker.com/)
+- Node.js 24 and npm for local development
+- Docker with the Docker Compose plugin for container deployment
 
 ### Running Locally
 
@@ -48,7 +50,7 @@ This is a simple web application that allows users to create and share text snip
 
 2.  **Install dependencies:**
     ```bash
-    npm install
+    npm ci
     ```
 
 3.  **Start the server:**
@@ -60,40 +62,35 @@ This is a simple web application that allows users to create and share text snip
 
 ### Running with Docker
 
-You can either build the Docker image from the source or pull the pre-built image from Docker Hub.
+Build locally for the target server architecture. The current server uses ARM64; do not reuse an x64-only image. The build uses Node.js 24 and `npm ci`, and `.dockerignore` excludes `.git/` from the build context.
 
 #### 1. Build from Source
 
 1.  **Build the Docker image:**
     ```bash
-    docker build -t pastebin-app .
+    docker build -t pastebin:3 -t jgkong/pastebin:3 .
     ```
 
 2.  **Run the Docker container:**
     ```bash
-    docker run -d -p 3000:3000 --name pastebin-container pastebin-app
+    docker run -d -p 3000:3000 --name pastebin-container pastebin:3
     ```
 
-#### 2. Pull from Docker Hub
+#### 2. Deploy with Docker Compose
 
-The image is publicly available on Docker Hub.
+The current server's Compose configuration is `/opt/docker/pastebin/compose.yaml`, outside this repository. It uses the locally built `pastebin:3` image with automatic restart, a health check, and log rotation. The `jgkong/pastebin:3` tag above is also local; building does not publish it to Docker Hub.
 
-1.  **Pull the image:**
-    You can pull either a specific version or the latest one.
+1.  **Build the image from the repository directory:**
     ```bash
-    # Pull version 1
-    docker pull jgkong/pastebin-app:1
-
-    # Or pull the latest version
-    docker pull jgkong/pastebin-app:latest
+    docker build -t pastebin:3 -t jgkong/pastebin:3 .
     ```
 
-2.  **Run the Docker container:**
+2.  **Start or update the Compose service:**
     ```bash
-    docker run -d -p 3000:3000 --name pastebin-container jgkong/pastebin-app:1
+    docker compose -f /opt/docker/pastebin/compose.yaml up -d --wait
     ```
 
-After running the container, the application will be accessible at `http://localhost:3000`.
+The standalone container is accessible at `http://localhost:3000`. The Compose service exposes port 3000 only within the existing external `proxy_net` network; Cloudflare Tunnel can use `http://pastebin:3000` as its service URL. Configure the public hostname separately. Rebuilding and redeploying replaces the container and clears its in-memory pastes.
 
 ## API Routes
 
