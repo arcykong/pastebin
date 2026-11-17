@@ -2,6 +2,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const { randomInt } = require('crypto');
 
 // In-memory storage for pastes
 const pastes = {};
@@ -60,7 +61,12 @@ app.get('/:id', (req, res) => {
 // --- Helper Functions ---
 
 function generateId(length = 8) {
-  return Math.random().toString(36).substring(2, 2 + length);
+  const alphabet = '23456789abcdefghijkmnpqrstuvwxyz';
+  let id = '';
+  for (let i = 0; i < length; i++) {
+    id += alphabet[randomInt(alphabet.length)];
+  }
+  return id;
 }
 
 // --- Server ---

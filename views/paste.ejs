@@ -9,9 +9,12 @@
 <body>
   <div class="container">
     <h1>View Paste</h1>
-    <textarea readonly rows="10" cols="50"><%= text %></textarea>
-    <br>
-    <button onclick="copyToClipboard()">Copy URL</button>
+    <textarea id="paste-text" hidden readonly>
+<%= text %></textarea>
+    <pre id="paste-display" class="paste-display"></pre>
+    <button type="button" onclick="copyToClipboard()">Copy URL</button>
+    <button type="button" onclick="copyText()">Copy Text</button>
+    <button type="button" onclick="window.location.href='/'">New Paste</button>
 
     <div id="qr-code-container" class="qr-code">
       <h3>Scan QR Code</h3>
@@ -22,6 +25,24 @@
 
   <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
   <script>
+    // Build links using DOM nodes so paste content remains text.
+    const pasteText = document.getElementById('paste-text').value;
+    const pasteDisplay = document.getElementById('paste-display');
+    const urlPattern = /https?:\/\/[^\s<>"']+/gi;
+    let lastIndex = 0;
+    for (const match of pasteText.matchAll(urlPattern)) {
+      let url = match[0].replace(/[.,!?;:)\]}]+$/, '');
+      pasteDisplay.appendChild(document.createTextNode(pasteText.slice(lastIndex, match.index)));
+      const link = document.createElement('a');
+      link.href = url;
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      link.textContent = url;
+      pasteDisplay.appendChild(link);
+      lastIndex = match.index + url.length;
+    }
+    pasteDisplay.appendChild(document.createTextNode(pasteText.slice(lastIndex)));
+
     // Generate QR Code
     try {
       const typeNumber = 4;
@@ -42,6 +63,15 @@
         alert('URL copied to clipboard!');
       }, () => {
         alert('Failed to copy URL.');
+      });
+    }
+
+    function copyText() {
+      const text = document.getElementById('paste-text').value;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard!');
+      }, () => {
+        alert('Failed to copy text.');
       });
     }
   </script>
